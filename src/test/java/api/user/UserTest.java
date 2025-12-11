@@ -51,7 +51,6 @@ public class UserTest {
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .and()
                 .body("code", equalTo(200))
                 .body("message", isA(String.class))
                 .body("message", hasLength(19))
