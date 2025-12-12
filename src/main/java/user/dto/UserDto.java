@@ -1,12 +1,14 @@
 package user.dto;
 
 public record UserDto(
+        Long id,
         String username,
-        String firstname,
-        String lastname,
+        String firstName,
+        String lastName,
         String email,
         String phone,
-        String password
+        String password,
+        Integer userStatus
 ) {
     //nothing for while
 }

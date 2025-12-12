@@ -30,30 +30,96 @@ public class UserTest {
 
     static Faker faker = new Faker();
 
-    UserDto newUser() {
+    static UserDto newUserDto() {
 
         return new UserDto(
+                null,
                 faker.name().username(),
                 faker.name().firstName(),
                 faker.name().lastName(),
                 faker.internet().emailAddress(),
                 faker.phoneNumber().phoneNumber(),
-                faker.internet().password()
+                faker.internet().password(),
+                null
         );
     }
 
     @Test
+    @Order(1)
     public void createUser_shouldReturn200() {
         request
-                .body(newUser())
-                .when()
+            .given()
+                .body(newUserDto())
+            .when()
                 .post("/user")
-                .then()
+            .then()
                 .assertThat()
+                    .statusCode(200)
+                    .body("code", equalTo(200))
+                    .body("message", isA(String.class))
+                    .body("message", hasLength(19))
+                    .body("size()", equalTo(3));
+    }
+
+    static UserDto[] newUserDtoArray(int size){
+
+        UserDto[] v = new UserDto[size];
+        for (int i = 0; i < size; i++) {
+            v[i] = newUserDto();
+        }
+        return v;
+    }
+
+    @Test
+    @Order(2)
+    public void createUser_withArray_shouldReturn200() {
+        request
+            .given()
+                .body(newUserDtoArray(5))
+            .when()
+                .post("/user/createWithArray")
+            .then()
                 .statusCode(200)
                 .body("code", equalTo(200))
                 .body("message", isA(String.class))
-                .body("message", hasLength(19))
-                .body("size()", equalTo(3));
+                .body("message", equalTo("ok"))
+                .body("type", equalTo("unknown"));
+    }
+
+    @Test
+    @Order(3)
+    public void getUserByUserName_shouldReturn200() {
+
+        var userDto = newUserDto();
+
+        request
+            .given()
+                .body(userDto)
+            .when()
+                .post("/user")
+            .then()
+                .statusCode(200);
+
+            given()
+                .basePath("/user")
+            .when()
+                .get(userDto.username())
+            .then()
+                .assertThat()
+                .statusCode(200)
+                .body("firstName", equalTo(userDto.firstName()))
+                .body("lastName", equalTo(userDto.lastName()))
+                .body("email", equalTo(userDto.email()))
+                .body("password", equalTo(userDto.password()))
+                .body("phone", equalTo(userDto.phone()))
+                .body("id", isA(Long.class))
+                .body("id", not(nullValue()));
+
+           given()
+               .basePath("/user")
+           .when()
+               .delete(userDto.username())
+           .then()
+               .statusCode(200);
     }
 }
